@@ -18,42 +18,38 @@ const registerUser = asyncHandler(async (req, res) => {
     //return response
 
 
-    const {fullname, email, username, password } = req.body
+    const {fullname, email, Username, password } = req.body
 
-    const arrayrequired = [fullname, email, username, password]
+    const arrayrequired = [fullname, email, Username, password]
 
     if(arrayrequired.some((field) => {
             (field?.trim() === "") }) ){
         throw new ApiError(400, "All field are required")
     }
-
-    if(!(arrayrequired[1].includes("@"))){
-        throw new ApiError(400, "incorrect email format")   
-     }
-     
+       
      const existedUser = await User.findOne({
         $or: [
-            { username }, { email } 
+            { Username }, { email } 
         ]
     });
   
     if(existedUser){
         throw new ApiError(409, "User with email or Username already exists")
     }
-
-   const avatarLocalPath = req.files?.avatar?.path;
-   const coverImageLocalPath = req.files?.coverImage[0]?.path;
-    
+     
+   const avatarLocalPath = req.files?.avatar[0]?.path;
+   const coverImageLocalPath = req.files?.coverImage?.[0]?.path;
    if(!avatarLocalPath){
-    throw new ApiError(400, "Avatar file is required")
-   }
+     throw new ApiError(400, "Avatar file is required")
+    }
     
-      const avatar =  await uploadOnCloudinary(avatarLocalPath)
+    const avatar =  await uploadOnCloudinary(avatarLocalPath)
+ 
       const coverImage = await uploadOnCloudinary(coverImageLocalPath)
 
 
       if(!avatar){
-        throw new ApiError(400, "Avatar file is required")
+        throw new ApiError(400, "Avatar a file is required")
       }
     
 
@@ -63,7 +59,7 @@ const registerUser = asyncHandler(async (req, res) => {
         coverImage : coverImage?.url || "",
         email,
         password,
-        username: username.toLowerCase()
+        Username: Username.toLowerCase()
       })
 
       const createdUser = await User.findById(user._id).select(
